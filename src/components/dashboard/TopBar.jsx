@@ -14,7 +14,7 @@ export default function Topbar({ user }) {
       {/* Left side text section with smooth scaling on group hover */}
       <div className="group transition-transform duration-300">
         <h2 className="text-lg font-semibold transition-colors duration-300 group-hover:text-[#AE7C54]">
-          Welcome, {user.name || "User"}
+           {user.name || "User"}
         </h2>
         <p className="text-xs text-gray-500 capitalize tracking-wide transition-transform duration-300 group-hover:translate-x-0.5">
           {user.role} Dashboard
