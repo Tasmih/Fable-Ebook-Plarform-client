@@ -2,18 +2,12 @@ import { betterAuth } from "better-auth";
 import { MongoClient } from "mongodb";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
 
-// Environment variable check
-if (!process.env.MONGO_DB_URI) {
-  throw new Error("MONGO_DB_URI is not defined");
-}
-
 const client = new MongoClient(process.env.MONGO_DB_URI);
-const db = client.db(process.env.AUTH_DB_NAME || "auth_db"); // Default db name jodi na thake
+await client.connect();
+
+const db = client.db(process.env.AUTH_DB_NAME);
 
 export const auth = betterAuth({
-
-  database: mongodbAdapter(db), 
-
   emailAndPassword: {
     enabled: true,
   },
@@ -23,20 +17,54 @@ export const auth = betterAuth({
     updateAge: 60 * 60 * 24,
   },
 
+  trustedOrigins: [
+    process.env.BETTER_AUTH_URL,
+    process.env.NEXT_PUBLIC_CLIENT_URL,
+    "http://localhost:3000",
+  ].filter(Boolean),
+
   socialProviders: {
     google: {
-      clientId: process.env.GOOGLE_CLIENT_ID || "",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     },
   },
 
-  
   user: {
     additionalFields: {
       role: {
-        default:"reader"
-        
-      }
+        type: "string",
+        required: false,
+        defaultValue: "user",
+        input: true,
+      },
+      status: {
+        type: "string",
+        required: false,
+        defaultValue: "active",
+      },
     },
   },
+
+  databaseHooks: {
+    user: {
+      create: {
+        before: async (user) => {
+          if (user.email === "admin@fable.com") {
+            user.role = "admin";
+          } else {
+            user.role = user.role || "user";
+          }
+
+          user.status = user.status || "active";
+
+          return user;
+        },
+      },
+    },
+  },
+
+  database: mongodbAdapter(db, {
+    client,
+  }),
 });

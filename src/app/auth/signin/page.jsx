@@ -22,58 +22,70 @@ export default function SignInPage() {
 
   const toggleVisibility = () => setIsVisible(!isVisible);
 
+  
+
   const getRoleRedirect = (role) => {
     if (role === "admin") return "/dashboard/admin";
     if (role === "writer") return "/dashboard/writer";
     return "/";
   };
 
-  const handleSignin = async (e) => {
-    e.preventDefault();
-    setError("");
-    setSuccess("");
-    setIsLoading(true);
+  const getLoggedInUser = async () => {
+  await new Promise((resolve) => setTimeout(resolve, 500));
 
-    try {
-      const { data, error: authError } = await signIn.email({
-        email,
-        password,
-      });
+  const res = await fetch("/api/session-token", {
+    cache: "no-store",
+  });
 
-      if (authError) {
-        setError(authError.message || "Something went wrong during sign in.");
-        toast.error(authError.message || "Sign in failed.", {
-          icon: <XCircle className="w-4 h-4 text-red-500" />,
-        });
-        return;
-      }
+  const data = await res.json().catch(() => null);
 
-      setSuccess("Signed in successfully! Redirecting...");
-      toast.success("Signed in successfully!", {
-        icon: <CheckCircle className="w-4 h-4 text-white" />,
-      });
+  return data?.user;
+};
+ const handleSignin = async (e) => {
+  e.preventDefault();
+  setError("");
+  setSuccess("");
+  setIsLoading(true);
 
-      setEmail("");
-      setPassword("");
+  try {
+    const { data, error: authError } = await signIn.email({
+      email,
+      password,
+    });
 
-      // directly read user role from auth response data
-      const role = data?.user?.role || "user";
-      const redirectPath = getRoleRedirect(role);
-
-      setTimeout(() => {
-        router.refresh();
-        router.replace(redirectPath);
-      }, 800);
-    } catch (err) {
-      setError("An unexpected network error occurred.");
-      toast.error("An unexpected network error occurred.", {
+    if (authError) {
+      setError(authError.message || "Something went wrong during sign in.");
+      toast.error(authError.message || "Sign in failed.", {
         icon: <XCircle className="w-4 h-4 text-red-500" />,
       });
-    } finally {
-      setIsLoading(false);
+      return;
     }
-  };
 
+    setSuccess("Signed in successfully! Redirecting...");
+    toast.success("Signed in successfully!", {
+      icon: <CheckCircle className="w-4 h-4 text-white" />,
+    });
+
+    setEmail("");
+    setPassword("");
+
+    const sessionUser = await getLoggedInUser();
+    const role = sessionUser?.role || data?.user?.role || "user";
+    const redirectPath = getRoleRedirect(role);
+
+    setTimeout(() => {
+      router.refresh();
+      router.replace(redirectPath);
+    }, 800);
+  } catch (err) {
+    setError("An unexpected network error occurred.");
+    toast.error("An unexpected network error occurred.", {
+      icon: <XCircle className="w-4 h-4 text-red-500" />,
+    });
+  } finally {
+    setIsLoading(false);
+  }
+};
   const handleGoogleSignIn = async () => {
     try {
       await signIn.social({

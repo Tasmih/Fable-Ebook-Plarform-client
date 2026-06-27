@@ -3,7 +3,7 @@
 import { toast } from "react-toastify";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   User,
@@ -18,7 +18,7 @@ import {
   CheckCircle,
 } from "lucide-react";
 import Logo from "@/components/Logo";
-import { signIn, signUp } from "@/lib/auth-client";
+import { signIn, authClient } from "@/lib/auth-client";
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -28,12 +28,6 @@ export default function SignUpPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [role, setRole] = useState("user");
-
-   const searchParams = useSearchParams();
-
-    const redirectTo = searchParams.get("redirect") || "/";
-
-    //Ui states
 
   const [isOpen, setIsOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
@@ -46,45 +40,88 @@ export default function SignUpPage() {
   const toggleConfirmVisibility = () =>
     setIsConfirmVisible(!isConfirmVisible);
 
+  useEffect(() => {
+    router.prefetch("/");
+    router.prefetch("/dashboard/writer");
+    router.prefetch("/dashboard/user");
+  }, [router]);
+
+  const getCallbackURL = () => {
+    return "/";
+  };
+
   const handleSignup = async (e) => {
-        e.preventDefault();
+    e.preventDefault();
+    setError("");
+    setSuccess("");
 
-        setError("");
-        setSuccess("");
-        setIsLoading(true);
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters.");
+      toast.error("Password must be at least 6 characters.", {
+        icon: <XCircle className="w-4 h-4 text-red-500" />,
+      });
+      return;
+    }
 
-        const plan = role === 'seeker' ? 'seeker_free' : 'recruiter_free';
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      toast.error("Passwords do not match.", {
+        icon: <XCircle className="w-4 h-4 text-red-500" />,
+      });
+      return;
+    }
 
-        try {
-            const { data, error: authError } = await signUp.email({
-                email,
-                password,
-                name,
-                role,
-                plan
-            });
+    setIsLoading(true);
 
-            if (authError) {
-                setError(authError.message || "Something went wrong during signup.");
-            } else {
-                setSuccess("Account created successfully! Welcome.");
-                setName("");
-                setEmail("");
-                setPassword("");
-                router.push(redirectTo);
-            }
-        } catch (err) {
-            setError("An unexpected network error occurred.");
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    try {
+      const targetCallback = getCallbackURL();
+
+      const { data, error: authError } = await authClient.signUp.email({
+        email,
+        password,
+        name,
+        role,
+        callbackURL: targetCallback,
+      });
+
+      if (authError) {
+        setError(authError.message || "Something went wrong during signup.");
+        toast.error(authError.message || "Something went wrong during signup.", {
+          icon: <XCircle className="w-4 h-4 text-red-500" />,
+        });
+        return;
+      }
+
+      setSuccess("Account created successfully! Welcome. Redirecting...");
+      toast.success("Account created successfully! Welcome.", {
+        icon: <CheckCircle className="w-4 h-4 text-white" />,
+      });
+
+      setName("");
+      setEmail("");
+      setPassword("");
+      setConfirmPassword("");
+      setRole("user");
+
+      setTimeout(() => {
+        router.push(targetCallback);
+        router.refresh();
+      }, 1500);
+    } catch (err) {
+      setError("An unexpected network error occurred.");
+      toast.error("An unexpected network error occurred.", {
+        icon: <XCircle className="w-4 h-4 text-red-500" />,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleGoogleSignIn = async () => {
     try {
       await signIn.social({
         provider: "google",
-        callbackURL: redirectTo || "/",
+        callbackURL: "/auth/select-role",
       });
     } catch (err) {
       setError("Failed to initialize Google sign in.");

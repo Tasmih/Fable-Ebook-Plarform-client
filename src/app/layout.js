@@ -1,6 +1,5 @@
 const dns = require("node:dns");
 dns.setServers(["8.8.8.8", "8.8.4.4"]);
-
 import { Geist, Geist_Mono } from "next/font/google";
 import Footer from "@/components/Footer";
 import "./globals.css";
@@ -19,10 +18,11 @@ const geistMono = Geist_Mono({
 
 export const metadata = {
   title: {
-    default: "Fable | Discover & Read Original Ebooks",
-    template: "%s | Fable",
+    default:"Fable |Discover & Read Original Ebooks",
+    template:"%s|Fable",
   },
   description: "A digital platform that connects ebook lovers, readers, and collectors with talented writers.",
+
 };
 
 export default function RootLayout({ children }) {
@@ -33,14 +33,11 @@ export default function RootLayout({ children }) {
       className={`${geistSans.variable} ${geistMono.variable} dark h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        {/* conditional navbar will show in homepage */}
-        <ConditionalNavbar />
-        
+        <ConditionalNavbar/>
         <main className="flex-grow">{children}</main>
-        
-        <Footer />
+        <Footer></Footer>
 
-        <ToastContainer 
+         <ToastContainer 
           position="top-right"
           autoClose={3000}
           hideProgressBar={false}
@@ -53,6 +50,7 @@ export default function RootLayout({ children }) {
           theme="dark"
         />
       </body>
+      
     </html>
   );
 }
