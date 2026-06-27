@@ -1,11 +1,30 @@
-import React from 'react';
+import { headers } from "next/headers";
+import { auth } from "@/lib/auth";
 
-const route = () => {
-  return (
-    <div>
-      <h1>this route page</h1>
-    </div>
-  );
-};
+export async function GET() {
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
 
-export default route;
+    if (!session?.session?.token) {
+      return Response.json(
+        { message: "unauthorized access" },
+        { status: 401 }
+      );
+    }
+
+    return Response.json({
+      token: session.session.token,
+      user: session.user,
+    });
+  } catch (error) {
+    return Response.json(
+      {
+        message: "failed to get session token",
+        error: error.message,
+      },
+      { status: 500 }
+    );
+  }
+}
