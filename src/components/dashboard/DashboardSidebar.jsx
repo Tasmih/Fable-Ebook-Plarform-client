@@ -203,7 +203,7 @@ export default function DashboardSidebar({ user }) {
                   FABLE
                 </h1>
                 <p className="text-[10px] font-bold uppercase tracking-wide text-[#FCB886]">
-                  Ebook Hub
+                  kkk
                 </p>
               </div>
             )}
