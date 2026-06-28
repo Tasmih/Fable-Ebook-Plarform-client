@@ -63,6 +63,11 @@ export default function AdminUsersPage() {
   };
 
   const handleDeleteUser = async (userId, userEmail) => {
+      if (userEmail === "admin@fable.com") {
+    toast.error("You cannot delete super admin");
+    return;
+  } 
+  
     if (userEmail === adminEmail) {
       toast.error("you cannot delete yourself");
       return;
