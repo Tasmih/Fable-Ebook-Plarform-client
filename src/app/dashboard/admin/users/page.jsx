@@ -122,7 +122,7 @@ export default function AdminUsersPage() {
             <div className="min-w-0">
               <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-[#f6f1ea]">
                 <UserCog size={16} />
-                Manage 
+                Manage Users
               </div>
 
               <h1 className="text-2xl font-bold text-white md:text-3xl">
