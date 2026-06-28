@@ -62,6 +62,34 @@ export default function AdminUsersPage() {
     }
   };
 
+  const handleDeleteUser = async (userId, userEmail) => {
+      if (userEmail === "admin@fable.com") {
+    toast.error("You cannot delete super admin");
+    return;
+  } 
+  
+    if (userEmail === adminEmail) {
+      toast.error("you cannot delete yourself");
+      return;
+    }
+
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this user?"
+    );
+
+    if (!confirmDelete) return;
+
+    try {
+      setWorkingId(userId);
+      await deleteAdminUser(userId, adminEmail);
+      toast.success("user deleted successfully");
+      setUsers((prev) => prev.filter((item) => item._id !== userId));
+    } catch (err) {
+      toast.error(err.message || "failed to delete user");
+    } finally {
+      setWorkingId("");
+    }
+  };
 
   const formatDate = (date) => {
     if (!date) return "N/A";
