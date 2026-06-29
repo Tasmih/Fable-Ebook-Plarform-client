@@ -94,6 +94,6 @@ For security reasons, sensitive credentials such as admin access details are not
 
 Live Project
 
-Live URL: 
-GitHub Repository (Client):https://github.com/Tasmih/Fable-Ebook-Plarform-client/commits/main/
+Live URL: https://fabel-ebook-sharing-platform.vercel.app
+GitHub Repository (Client):https://github.com/Tasmih/skillsphere-online-learning-platform
 GitHub Repository (Server):https://github.com/Tasmih/Fable-Ebook-Platform-server
